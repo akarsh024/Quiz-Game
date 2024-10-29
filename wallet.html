@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Wallet</title>
+    <style>
+      /* General Body Styles */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background: url("Background1.jpg") no-repeat center center fixed;
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      /* Wallet Container */
+      .container {
+        background: #1b1e3b;
+        border-radius: 25px;
+        padding: 30px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        width: 350px;
+        position: relative;
+        border: transparent;
+      }
+
+      h1 {
+        color: #ffffff;
+        font-size: 2em;
+        margin-bottom: 20px;
+      }
+
+      .balance h2 {
+        color: #ffcc00;
+        font-size: 1.8em;
+        margin-bottom: 20px;
+      }
+
+      .transaction-form {
+        margin-bottom: 20px;
+      }
+
+      .transaction-form input {
+        width: 100%;
+        padding: 10px;
+        font-size: 1.1em;
+        border-radius: 10px;
+        border: 2px solid #8b4513;
+        outline: none;
+        margin-bottom: 20px;
+      }
+
+      /* Button Container */
+      .button-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      button {
+        padding: 10px 15px;
+        font-size: 1.1em;
+        border: none;
+        border-radius: 10px;
+        background-color: #ffcc00;
+        color: #3a3a3a;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s;
+        width: 30%;
+      }
+
+      button:hover {
+        background-color: #ffd700;
+        transform: scale(1.05);
+      }
+
+      /* Transaction History */
+      .transactions {
+        margin-top: 30px;
+      }
+
+      #transaction-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        color: #ffffff;
+        display: none;
+      }
+
+      #transaction-list li {
+        background: #4caf50;
+        margin-bottom: 5px;
+        padding: 10px;
+        border-radius: 8px;
+      }
+
+      #toggle-transaction-btn {
+        background-color: #ffcc00;
+        border: none;
+        color: #3a3a3a;
+        padding: 10px;
+        font-size: 1.1em;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s;
+        width: 100%;
+      }
+
+      #toggle-transaction-btn:hover {
+        background-color: #ffd700;
+        transform: scale(1.05);
+      }
+
+      /* Popup styling */
+      .popup {
+        position: fixed;
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+      }
+
+      .popup .popuptext {
+        visibility: hidden;
+        width: 300px;
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 10px;
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        margin-left: -150px;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      .popup .popuptext::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #555 transparent transparent transparent;
+      }
+
+      .popup .show {
+        visibility: visible;
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="popup" id="popup">
+      <span class="popuptext" id="myPopup">Popup message</span>
+    </div>
+
+    <div class="container">
+      <h1>Digital Wallet</h1>
+      <div class="balance">
+        <h2>Balance: <span id="balance">0.00</span> INR</h2>
+      </div>
+      <div class="transaction-form">
+        <input
+          type="number"
+          id="amount"
+          placeholder="Enter the amount"
+          required
+        />
+      </div>
+      <br />
+      <div class="button-container">
+        <button id="add-btn">Add Funds</button>
+        <button id="subtract-btn">Withdraw Funds</button>
+        <button onclick="document.location='index.html'">Exit</button>
+      </div>
+      <div class="transactions">
+        <button id="toggle-transaction-btn">Show Transaction History</button>
+        <ul id="transaction-list"></ul>
+      </div>
+    </div>
+
+    <script>
+      let balance = 0;
+      const playerName = localStorage.getItem("userName");
+      const API_BASE_URL = 'http://localhost:3001/api/wallet'; // Using HTTP for development
+      
+      const balanceElement = document.getElementById("balance");
+      const transactionList = document.getElementById("transaction-list");
+      const toggleTransactionBtn = document.getElementById("toggle-transaction-btn");
+      const amountInput = document.getElementById("amount");
+      const popupText = document.getElementById("myPopup");
+
+      // API Functions
+      const addFundsToWallet = async (username, amount) => {
+          try {
+              const response = await fetch(`${API_BASE_URL}/add`, {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ username, amount }),
+              });
+
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              
+              const data = await response.json();
+              return data;
+          } catch (error) {
+              console.error("API Error:", error);
+              showPopup(error.message || "Failed to add funds. Please try again.");
+              throw error;
+          }
+      };
+
+      const getInitialBalance = async () => {
+          try {
+              // First try to get balance from localStorage as fallback
+              const localBalance = localStorage.getItem("walletBalance");
+              if (localBalance) {
+                  balance = parseFloat(localBalance);
+                  updateBalance();
+              }
+
+              // Then try to fetch from server
+              const response = await fetch(`${API_BASE_URL}/${playerName}`);
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+
+              const data = await response.json();
+              balance = data.wallet;
+              updateBalance();
+          } catch (error) {
+              console.error("Failed to fetch balance:", error);
+              showPopup("Using cached balance. Server sync failed.");
+          }
+      };
+
+      // Initialize wallet
+      window.addEventListener("DOMContentLoaded", async () => {
+          await getInitialBalance();
+
+          // Handle quiz score
+          const score = parseFloat(localStorage.getItem("currentScore"));
+          if (!isNaN(score) && score > 0) {
+              const addedAmount = score * 10;
+              try {
+                  await addFundsToWallet(playerName, addedAmount);
+                  balance += addedAmount;
+                  updateBalance();
+                  addTransaction("Added from Quiz", addedAmount);
+              } catch (error) {
+                  console.error("Failed to add quiz rewards:", error);
+              }
+              localStorage.removeItem("currentScore");
+          }
+      });
+
+      // Event Listeners
+      document.getElementById("add-btn").addEventListener("click", async () => {
+          const amount = parseFloat(amountInput.value);
+          if (validateAmount(amount, 50)) {
+              try {
+                  await addFundsToWallet(playerName, amount);
+                  balance += amount;
+                  updateBalance();
+                  addTransaction("Added", amount);
+                  amountInput.value = "";
+              } catch (error) {
+                  showPopup("Failed to add funds. Please try again.");
+              }
+          }
+      });
+
+      document.getElementById("subtract-btn").addEventListener("click", async () => {
+          const amount = parseFloat(amountInput.value);
+          if (validateAmount(amount, 300) && amount <= balance) {
+              try {
+                  const response = await fetch(`${API_BASE_URL}/withdraw`, {
+                      method: "POST",
+                      headers: {
+                          "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({ username: playerName, amount }),
+                  });
+
+                  if (!response.ok) {
+                      throw new Error("Withdrawal failed");
+                  }
+
+                  balance -= amount;
+                  updateBalance();
+                  addTransaction("Withdrawn", amount);
+                  amountInput.value = "";
+              } catch (error) {
+                  showPopup("Failed to withdraw funds. Please try again.");
+              }
+          }
+      });
+
+      // Utility Functions
+      function validateAmount(amount, minAmount) {
+          if (isNaN(amount) || amount < minAmount) {
+              showPopup(`Please enter an amount of at least ${minAmount} INR.`);
+              return false;
+          }
+          return true;
+      }
+
+      function updateBalance() {
+          balanceElement.textContent = balance.toFixed(2);
+          localStorage.setItem("walletBalance", balance.toString());
+      }
+
+      function addTransaction(type, amount) {
+          const li = document.createElement("li");
+          li.textContent = `${type}: ${amount.toFixed(2)} INR`;
+          transactionList.insertBefore(li, transactionList.firstChild);
+      }
+
+      toggleTransactionBtn.addEventListener("click", () => {
+          const isHidden = transactionList.style.display === "none" || transactionList.style.display === "";
+          transactionList.style.display = isHidden ? "block" : "none";
+          toggleTransactionBtn.textContent = isHidden ? "Hide Transaction History" : "Show Transaction History";
+      });
+
+      function showPopup(message) {
+          popupText.textContent = message;
+          popupText.classList.add("show");
+          setTimeout(() => {
+              popupText.classList.remove("show");
+          }, 3000);
+      }
+    </script>
+  </body>
+</html>

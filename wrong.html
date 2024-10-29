@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Better Luck Next Time!</title>
+    <style>
+        body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #ffe4e1, #f0f8ff);
+    background-image: url(background1.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.container {
+    text-align: center;
+    background:lightcyan;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+    max-width: 500px;
+    transition: transform 0.3s;
+}
+
+.container:hover {
+    transform: scale(1.02);
+}
+
+h1 {
+    font-size: 2.5em;
+    color: #ff6347;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.emoji {
+    width: 120px; /* Adjust size as needed */
+    height: auto;
+    margin: 20px 0;
+    animation: bounce 1s infinite alternate;
+}
+
+@keyframes bounce {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(-10px);
+    }
+}
+
+.message {
+    font-size: 1.5em;
+    color:#ff6347;
+    margin-top: 20px;
+    line-height: 1.6;
+}
+
+.try-again-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    color: white;
+    background-color: #ff4500;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.try-again-btn:hover {
+    background-color: #ff6347;
+    transform: scale(1.05);
+}
+
+    </style>
+</head>
+<body>
+    <audio type="audio/mp3" src="wrong.mp3" autoplay></audio>
+    <div class="container">
+        <h1>Better Luck Next Time!</h1>
+        <img src="sad-emoji.png" alt="Sad Emoji" class="emoji">
+        <p class="message">Every setback is a setup for a comeback. Remember, every great success is built on failures! <br>You earned 0 points</p>
+        <a href="home.html"><button class="try-again-btn" >Try Again!</button></a>
+    </div>
+
+    <script>
+        function preventBack(){
+        window.history.forward();
+        }
+        setTimeout("preventBack()", 0);
+        window.onunload = function() { null };
+    </script>
+</body>
+</html>

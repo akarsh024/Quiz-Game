@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Game</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="nav">
+    <p id="score"></p>
+  </div> <br><br>
+  <div class="quiz-container" id="quiz-container">
+    <div class="count-down">
+      <p class="time">Time Left : &nbsp;</p>
+    <p id="timer"></p>
+    </div>
+    <h1>Quiz</h1>
+    <div id="question-container" class="question-container">
+      <p id="question">Question goes here</p>
+      <div class="options">
+        <button id="option1" class="option-btn">Option 1</button>
+        <button id="option2" class="option-btn">Option 2</button>
+        <button id="option3" class="option-btn">Option 3</button>
+        <button id="option4" class="option-btn">Option 4</button>
+      </div>
+    </div>
+    <!-- <p id="score"></p>
+    <p id="timer"></p> -->
+    <button id="submit-btn" class="submit-btn" style="display:none;">Submit</button>
+    <!-- Popup structure -->
+    <div id="popup" class="popup" style="display:none;">
+      <div class="popup-content">
+        <span id="closePopupBtn" class="close-btn">&times;</span>
+        <p id="message">You have reached a milestone!</p>
+        <img src="milestone msg.png" alt="fifty" width="350">
+        <button id="continue-btn">Continue</button>
+        <button id="quit-btn">Quit</button>
+      </div>
+    </div> 
+
+  </div>
+
+    <!-- Background music -->
+    <audio type="audio/mp3" src="music1.mp3" autoplay loop></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
